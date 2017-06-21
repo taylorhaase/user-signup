@@ -8,74 +8,76 @@ app.config['DEBUG'] = True
 
 @app.route("/")
 def index():
-    return render_template('hello_form.html')
+    return render_template('user_signup.html')
 
-@app.route("/hello", methods=['POST'])
-def hello():
-    first_name = request.form['user_name']
-    return render_template('welcome_page.html', user_name=user_name)
 
-@app.route("/validate-time")
-def display_time_form():
-    return render_template('time_form.html')
+@app.route('/validate-signup', methods=['POST'])
+def validate_inputs():
 
-def is_integer(num):
-    try:
-        int(num)
-        return True
-    except ValueError:
-        return False
+    username = request.form['username']
+    password = request.form['password']
+    verify = request.form['verify']
+    email = request.form['email']
 
-@app.route('/validate-time', methods=['POST'])
-def validate_time():
+    username_error = ''
+    password_error = ''
+    verify_error = ''
+    email_error = ''
 
-    hours = request.form['hours']
-    minutes = request.form['minutes']
+    for i in username:
+        if i.isspace():
+            username_error = 'Username must not contain spaces.'
+        
+        else:
+            username = str(username)
+            if len(username) < 3 or len(username) > 20:
+                username_error = 'Username must be 3-20 characters'
+    
+  
+    if not len(username):
+        username_error = 'Not a valid username' 
 
-    hours_error = ''
-    minutes_error = ''
+    for i in password:
+        if i.isspace():
+            password_error = 'Password must not contain spaces.'
+            password = ''
+        else:
+            password = str(password)
+            if len(password) < 3 or len(password) > 20:
+                password_error = 'Password must be 3-20 characters and not contain spaces.'
+                password = ''
+    if password != verify:
+        verify_error = 'Passwords do not match'
+        verify = ''
+        password = ''
+    
+    if not len(password):
+        password_error = 'Not a valid password'
 
-    if not is_integer(hours):
-        hours_error = 'Not a valid integer'
-        hours = ''
+    for i in email:
+        if i.isspace():
+            email_error = 'This is not a valid email'
+            if len(email) < 3 or len(email) > 20:
+                email_error = 'Email must be 3-20 characters'
+        else:
+            email = str(email)
+            if "@" not in email:
+                email_error = 'This is not a valid email'
+   
+            if "." not in email:
+                email_error = 'This is not a valid email'
+
+    if not username_error and not password_error and not verify_error and not email_error:
+        return redirect('/welcome-page?username={0}'.format(username))
     else:
-        hours = int(hours)
-        if hours > 23 or hours < 0:
-            hours_error = 'Hours value out of range (0-23)'
-            hours = ''
+        return render_template('user_signup.html', username_error=username_error,
+            password_error=password_error,
+            verify_error=verify_error, email_error=email_error, 
+            username=username, password=password,verify=verify, email=email)
 
-    if not is_integer(minutes):
-        minutes_error = 'Not a valid integer'
-        minutes = ''
-    else:
-        minutes = int(minutes)
-        if minutes > 59 or minutes < 0:
-            minutes_error = 'Minutes value out of range (0-59)'
-            minutes = ''
-
-    if not minutes_error and not hours_error:
-        time = str(hours) + ":" + str(minutes)
-        return redirect('/valid-time?time={0}'.format(time))
-    else:
-        return render_template('time_form.html', hours_error=hours_error,
-            minutes_error=minutes_error,
-            hours=hours, minutes=minutes)
-
-@app.route('/valid-time')
-def valid_time():
-    time = request.args.get('time')
-    return '<h1>You submitted {0}. Thanks for submitting a valid time.</h1>'.format(time)
-
-tasks = []
-
-
-@app.route('/todos', methods=['POST','GET'])
-def todos():
-
-    if request.method == 'POST':
-        task = request.form['task']
-        tasks.append(task)
-
-    return render_template('todos.html', title="TODOs", tasks=tasks)
+@app.route('/welcome-page')
+def welcome():
+    username=request.args.get('username')
+    return render_template('welcome_page.html', username=username)
 
 app.run()
