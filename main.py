@@ -24,6 +24,7 @@ def validate_inputs():
     verify_error = ''
     email_error = ''
 
+#validate username
     for i in username:
         if i.isspace():
             username_error = 'Username must not contain spaces.'
@@ -37,6 +38,7 @@ def validate_inputs():
     if not len(username):
         username_error = 'Not a valid username' 
 
+#validate passwords
     for i in password:
         if i.isspace():
             password_error = 'Password must not contain spaces.'
@@ -54,6 +56,8 @@ def validate_inputs():
     if not len(password):
         password_error = 'Not a valid password'
 
+
+#validate email
     for i in email:
         if i.isspace():
             email_error = 'This is not a valid email'
@@ -67,6 +71,7 @@ def validate_inputs():
             if "." not in email:
                 email_error = 'This is not a valid email'
 
+#redirect to welcome page
     if not username_error and not password_error and not verify_error and not email_error:
         return redirect('/welcome-page?username={0}'.format(username))
     else:
